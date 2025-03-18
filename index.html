@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Data Relay</title>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const allowedOrigin = "https://blbms.github.io/api-site/";
+            const apiURL = "https://your-infinityfree-api.com/data";
+            
+            if (document.referrer.startsWith(allowedOrigin)) {
+                fetch(apiURL, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-From': document.referrer
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.allowed) {
+                        document.getElementById("dataContainer").innerHTML = JSON.stringify(data, null, 2);
+                    } else {
+                        document.body.innerHTML = "<h3>Access Denied</h3>";
+                    }
+                })
+                .catch(error => console.error("Error fetching data:", error));
+            } else {
+                document.body.innerHTML = "<h3>Unauthorized Access</h3>";
+            }
+        });
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h2>Data Response</h2>
+    <pre id="dataContainer">Waiting for data...</pre>
+</body>
+</html>
