@@ -1,0 +1,26 @@
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const allowedOrigin = "https://blbms.github.io/api-site/";
+        const apiURL = "https://apicc.42web.io/proxy.php?url=https://blbms.github.io/oneuser/data.json";
+
+        // Pridobi podatke in preveri izvor
+        fetch(apiURL, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-From': document.referrer
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error("Unauthorized Access");
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById("dataContainer").innerHTML = JSON.stringify(data, null, 2);
+        })
+        .catch(error => {
+            console.error("Napaka:", error);
+            document.body.innerHTML = "<h3>Unauthorized Access</h3>";
+        });
+    });
+</script>
