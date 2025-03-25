@@ -5,50 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prikaz podatkov</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background-color: black; color: white; }
-        table { width: 80%; margin: auto; border-collapse: collapse; }
-        th, td { border: 1px solid black; padding: 8px; }
-        th { background-color: black; }
-    </style>
-</head>
-<body>
-    <h2>Prikaz podatkov</h2>
-    <div id="tabela">Nalaganje...</div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const allowedOrigin = "https://blbms.github.io/api-site/";
-        const apiURL = "https://apicc.42web.io/proxy.php?url=https://blbms.github.io/oneuser/data.json";
-
-        // Pridobi podatke in preveri izvor
-        fetch(apiURL, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-From': document.referrer
-            }
-        })
-        .then(response => {
-            if (!response.ok) throw new Error("Unauthorized Access");
-            return response.json();
-        })
-        .then(data => {
-            document.getElementById("dataContainer").innerHTML = JSON.stringify(data, null, 2);
-        })
-        .catch(error => {
-            console.error("Napaka:", error);
-            document.body.innerHTML = "<h3>Unauthorized Access</h3>";
-        });
-    });
-</script>
-    <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
+            background-color: black;
+            color: white;
             padding: 20px;
         }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            color: white;
+            background-color: black;
+            border: 2px solid white;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid white;
+            text-align: center;
+        }
+        th {
+            background-color: black;
+            color: white;
+        }
         pre {
-            background: #f4f4f4;
+            background: #444;
+            color: white;
             padding: 10px;
             border-radius: 5px;
             text-align: left;
@@ -56,7 +39,44 @@
     </style>
 </head>
 <body>
-    <h2>Data Response</h2>
-    <pre id="dataContainer">Waiting for data...</pre>
+    <h2>Prikaz podatkov</h2>
+    <pre id="dataContainer">Pridobivanje podatkov...</pre>
+
+    <script>
+        function prikaziTabelo(data) {
+            let table = "<table>";
+            table += "<tr><th>Ključ</th><th>Vrednost</th></tr>";  // Naslovi stolpcev
+
+            for (let key in data) {
+                table += `<tr><td>${key}</td><td>${data[key]}</td></tr>`;
+            }
+            table += "</table>";
+
+            document.getElementById("dataContainer").innerHTML = table;
+        }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            const apiURL = "https://apicc.42web.io/proxy.php?url=https://blbms.github.io/oneuser/data.json";
+
+            try {
+                const response = await fetch(apiURL, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-From': document.referrer
+                    }
+                });
+
+                if (!response.ok) throw new Error("Napaka pri pridobivanju podatkov");
+
+                const data = await response.json();
+                prikaziTabelo(data);
+
+            } catch (error) {
+                console.error("Napaka:", error);
+                document.getElementById("dataContainer").innerHTML = "Napaka pri pridobivanju podatkov ali nepooblaščen dostop.";
+            }
+        });
+    </script>
 </body>
 </html>
