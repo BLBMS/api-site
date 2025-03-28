@@ -6,12 +6,10 @@
     <script>
         const sourcePage = 'oneuser';
         
-        // Uporaba fetch z ročno nastavljenimi glavami
         fetch('https://apicc.42web.io/proxy-content', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'HTTP_CONTENT_TYPE': 'application/json', // POSEBNO ZA INFINITYFREE
                 'X-Source-Page': sourcePage,
                 'X-Requested-From': window.location.href
             },
@@ -20,13 +18,10 @@
             })
         })
         .then(async response => {
+            const data = await response.json();
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Request failed');
+                throw new Error(data.error || 'Request failed');
             }
-            return response.json();
-        })
-        .then(data => {
             console.log('Success:', data);
             // Tukaj obdelajte podatke
         })
