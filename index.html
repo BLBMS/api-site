@@ -9,49 +9,34 @@
         const urlParams = new URLSearchParams(window.location.search);
         const sourcePage = urlParams.get('source') || 'oneuser';
         
-        // Pripravi zahtevek
+        // Spremenjen fetch klic z dodanimi headers in mode: 'cors'
         const requestOptions = {
             method: 'POST',
             mode: 'cors',
-            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Source-Page': sourcePage,
-                'X-Requested-From': window.location.href,
-                'X-API-Key': 'ccminer-proxy-2025'
+                'X-Source-Page': 'api-site',
+                'X-Requested-From': window.location.href
             },
             body: JSON.stringify({
-                data_url: `https://blbms.github.io/${sourcePage}/data.json`,
-                source: sourcePage,
-                timestamp: Date.now()
+                data_url: `https://blbms.github.io/oneuser/data.json`,
+                source: 'oneuser'
             })
         };
-
-        // Pošlji zahtevo
+        
         fetch('https://apicc.42web.io/proxy-content', requestOptions)
-            .then(async response => {
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
-                }
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
                 return response.json();
             })
             .then(data => {
-                window.parent.postMessage({
-                    type: "formatted-data",
-                    source: sourcePage,
-                    html: data.html,
-                    timestamp: data.timestamp
-                }, "https://blbms.github.io");
+                console.log('Success:', data);
+                // Tukaj obdelajte podatke
             })
             .catch(error => {
-                console.error('API Error:', error);
-                window.parent.postMessage({
-                    type: "api-error",
-                    source: sourcePage,
-                    message: error.message || "Napaka pri komunikaciji s strežnikom"
-                }, "https://blbms.github.io");
+                console.error('Error:', error);
             });
+                
     </script>
 </head>
 <body>
