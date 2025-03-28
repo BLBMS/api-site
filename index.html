@@ -6,34 +6,37 @@
     <script>
         const sourcePage = 'oneuser';
         
-        // Uporaba fetch z dodatnimi možnostmi
-        fetch('https://apicc.42web.io/proxy-content', {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Source-Page': sourcePage,
-                'X-Requested-From': window.location.href
-            },
-            body: JSON.stringify({
-                data_url: `https://blbms.github.io/${sourcePage}/data.json`
-            })
-        })
-        .then(async response => {
-            if (!response.ok) {
-                const error = await response.json().catch(() => ({}));
-                throw new Error(error.error || `HTTP error! Status: ${response.status}`);
+        // Uporaba XMLHttpRequest za boljšo združljivost
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'https://apicc.42web.io/proxy-content', true);
+        
+        // Nujno nastavi glave PRED open()
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('X-Source-Page', sourcePage);
+        xhr.setRequestHeader('X-Requested-From', window.location.href);
+        xhr.setRequestHeader('HTTP_CONTENT_TYPE', 'application/json'); // Posebno za InfinityFree
+        
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    const data = JSON.parse(xhr.responseText);
+                    console.log('Success:', data);
+                    // Tukaj obdelajte podatke
+                } else {
+                    console.error('Error:', xhr.status, xhr.statusText);
+                    try {
+                        const error = JSON.parse(xhr.responseText);
+                        console.error('Error details:', error);
+                    } catch (e) {
+                        console.error('Raw response:', xhr.responseText);
+                    }
+                }
             }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Success:', data);
-            // Tukaj obdelajte podatke
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            // Tukaj obravnavajte napako
-        });
+        };
+        
+        xhr.send(JSON.stringify({
+            data_url: `https://blbms.github.io/${sourcePage}/data.json`
+        }));
     </script>
 </head>
 <body>
