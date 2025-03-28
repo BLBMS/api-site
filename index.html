@@ -67,32 +67,6 @@
             }
         });
 
-
-<!--       
-        document.addEventListener("DOMContentLoaded", async () => {
-            const apiURL = "https://apicc.42web.io/proxy.php?url=https://blbms.github.io/oneuser/data.json";
-    
-            try {
-                const response = await fetch(apiURL, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-From': document.referrer
-                    }
-                });
-    
-                if (!response.ok) throw new Error("Napaka pri pridobivanju podatkov");
-    
-                const data = await response.json();
-                prikaziTabelo(data);
-    
-            } catch (error) {
-                console.error("Napaka:", error);
-                document.getElementById("dataContainer").innerHTML = "Napaka pri pridobivanju podatkov ali nepooblaščen dostop.";
-            }
-        });
--->
-    
         function prikaziTabelo(data) {
             let table = "<table style='border-collapse: collapse; width: 80%; margin: auto; color: white; background-color: black;'>";
             for (let key in data) {
