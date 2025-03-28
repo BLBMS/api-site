@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Prenos v.005</title>
+</head>
+<body>
+    <script>
+        // Preveri referer
+        if (document.referrer.indexOf("https://blbms.github.io/oneuser/") !== 0) {
+            document.body.innerHTML = "<h1>Nepooblaščen dostop</h1>";
+            throw new Error("Unauthorized access");
+        }
+
+        // Posreduj podatke nazaj v parent okno
+        window.addEventListener('message', (event) => {
+            if (event.origin !== "https://apicc.42web.io") return;
+            
+            if (event.data.type === "formatted-data") {
+                window.parent.postMessage({
+                    type: "final-data",
+                    html: event.data.html
+                }, "https://blbms.github.io");
+            }
+        });
+
+        // Inicializacija
+        window.parent.postMessage({ 
+            type: "api-ready",
+            source: "api-site" 
+        }, "https://apicc.42web.io");
+    </script>
+</body>
+</html>
