@@ -13,14 +13,17 @@
         const requestOptions = {
             method: 'POST',
             mode: 'cors',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
                 'X-Source-Page': sourcePage,
-                'X-Requested-From': window.location.href
+                'X-Requested-From': window.location.href,
+                'X-API-Key': 'ccminer-proxy-2025'
             },
             body: JSON.stringify({
                 data_url: `https://blbms.github.io/${sourcePage}/data.json`,
-                source: sourcePage
+                source: sourcePage,
+                timestamp: Date.now()
             })
         };
 
@@ -28,8 +31,8 @@
         fetch('https://apicc.42web.io/proxy-content', requestOptions)
             .then(async response => {
                 if (!response.ok) {
-                    const error = await response.json().catch(() => ({}));
-                    throw new Error(error.message || `HTTP error! Status: ${response.status}`);
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
                 }
                 return response.json();
             })
