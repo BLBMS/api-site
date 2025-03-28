@@ -2,48 +2,46 @@
 <html lang="sl">
 <head>
     <meta charset="UTF-8">
-    <title>API Gateway v.005</title>
-</head>
-<body>
+    <title>API Gateway Proxy</title>
     <script>
         // Preberi parameter iz URL-a
         const urlParams = new URLSearchParams(window.location.search);
-        const sourcePage = urlParams.get('source');
+        const sourcePage = urlParams.get('source') || 'oneuser';
         
-        if (!sourcePage) {
-            document.body.innerHTML = "Manjkajoč parameter vira";
-            throw new Error("Missing source parameter");
-        }
-
         // Posreduj zahtevo na zaščiten strežnik
         fetch('https://apicc.42web.io/proxy-content', {
             method: 'POST',
+            mode: 'cors',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Source-Page': sourcePage
+                'X-Source-Page': sourcePage,
+                'X-Requested-From': 'https://blbms.github.io/api-site/'
             },
             body: JSON.stringify({
                 data_url: `https://blbms.github.io/${sourcePage}/data.json`,
-                callback_url: window.location.href
+                source: sourcePage
             })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        })
         .then(data => {
-            // Posreduj podatke nazaj na originalno stran
             window.parent.postMessage({
                 type: "formatted-data",
-                source: sourcePage,
-                html: data.html
+                html: data.html || '<div>Ni podatkov</div>'
             }, "https://blbms.github.io");
         })
         .catch(error => {
             console.error('Napaka:', error);
             window.parent.postMessage({
                 type: "error",
-                source: sourcePage,
-                message: "Napaka pri obdelavi podatkov"
+                message: "Napaka pri pridobivanju podatkov"
             }, "https://blbms.github.io");
         });
     </script>
+</head>
+<body>
+    <!-- Prazno - vse se izvaja prek skripte -->
 </body>
 </html>
