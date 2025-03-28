@@ -6,24 +6,22 @@
     <script>
         const sourcePage = 'oneuser'; // Ali dobite iz URL parametrov
 
-        // Pripravi zahtevek s PRAVILNIMI glavami
+        // Ustvarite pravilen URLSearchParams objekt za Content-Type
+        const headers = new Headers();
+        headers.append('Content-Type', 'application/json');
+        headers.append('X-Source-Page', sourcePage);
+        headers.append('X-Requested-From', window.location.href);
+
         fetch('https://apicc.42web.io/proxy-content', {
             method: 'POST',
             mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json', // TO JE KLJUČNA VRSTICA
-                'X-Source-Page': sourcePage,
-                'X-Requested-From': window.location.href
-            },
+            headers: headers,
             body: JSON.stringify({
                 data_url: `https://blbms.github.io/${sourcePage}/data.json`
             })
         })
-        .then(async response => {
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Request failed');
-            }
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
             return response.json();
         })
         .then(data => {
