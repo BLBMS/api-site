@@ -2,34 +2,48 @@
 <html lang="sl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Prenos v.005</title>
+    <title>API Gateway v.005</title>
 </head>
 <body>
     <script>
-        // Preveri referer
-        if (document.referrer.indexOf("https://blbms.github.io/oneuser/") !== 0) {
-            document.body.innerHTML = "<h1>Nepooblaščen dostop</h1>";
-            throw new Error("Unauthorized access");
+        // Preberi parameter iz URL-a
+        const urlParams = new URLSearchParams(window.location.search);
+        const sourcePage = urlParams.get('source');
+        
+        if (!sourcePage) {
+            document.body.innerHTML = "Manjkajoč parameter vira";
+            throw new Error("Missing source parameter");
         }
 
-        // Posreduj podatke nazaj v parent okno
-        window.addEventListener('message', (event) => {
-            if (event.origin !== "https://apicc.42web.io") return;
-            
-            if (event.data.type === "formatted-data") {
-                window.parent.postMessage({
-                    type: "final-data",
-                    html: event.data.html
-                }, "https://blbms.github.io");
-            }
+        // Posreduj zahtevo na zaščiten strežnik
+        fetch('https://apicc.42web.io/proxy-content', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Source-Page': sourcePage
+            },
+            body: JSON.stringify({
+                data_url: `https://blbms.github.io/${sourcePage}/data.json`,
+                callback_url: window.location.href
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Posreduj podatke nazaj na originalno stran
+            window.parent.postMessage({
+                type: "formatted-data",
+                source: sourcePage,
+                html: data.html
+            }, "https://blbms.github.io");
+        })
+        .catch(error => {
+            console.error('Napaka:', error);
+            window.parent.postMessage({
+                type: "error",
+                source: sourcePage,
+                message: "Napaka pri obdelavi podatkov"
+            }, "https://blbms.github.io");
         });
-
-        // Inicializacija
-        window.parent.postMessage({ 
-            type: "api-ready",
-            source: "api-site" 
-        }, "https://apicc.42web.io");
     </script>
 </body>
 </html>
