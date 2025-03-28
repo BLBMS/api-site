@@ -2,46 +2,52 @@
 <html lang="sl">
 <head>
     <meta charset="UTF-8">
-    <title>API Gateway Proxy</title>
+    <title>API Proxy</title>
+    <link rel="icon" href="data:,"> <!-- Prepreči CORB težavo -->
     <script>
-        // Preberi parameter iz URL-a
+        // Določi vir podatkov
         const urlParams = new URLSearchParams(window.location.search);
         const sourcePage = urlParams.get('source') || 'oneuser';
         
-        // Posreduj zahtevo na zaščiten strežnik
-        fetch('https://apicc.42web.io/proxy-content', {
+        // Konfiguracija zahtevka
+        const requestData = {
             method: 'POST',
             mode: 'cors',
             headers: {
                 'Content-Type': 'application/json',
                 'X-Source-Page': sourcePage,
-                'X-Requested-From': 'https://blbms.github.io/api-site/'
+                'X-Requested-From': window.location.href
             },
             body: JSON.stringify({
                 data_url: `https://blbms.github.io/${sourcePage}/data.json`,
                 source: sourcePage
             })
-        })
-        .then(response => {
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            return response.json();
-        })
-        .then(data => {
-            window.parent.postMessage({
-                type: "formatted-data",
-                html: data.html || '<div>Ni podatkov</div>'
-            }, "https://blbms.github.io");
-        })
-        .catch(error => {
-            console.error('Napaka:', error);
-            window.parent.postMessage({
-                type: "error",
-                message: "Napaka pri pridobivanju podatkov"
-            }, "https://blbms.github.io");
-        });
+        };
+
+        // Pošlji zahtevo
+        fetch('https://apicc.42web.io/proxy-content', requestData)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                window.parent.postMessage({
+                    type: "formatted-data",
+                    html: data.html || '<div>Ni podatkov</div>'
+                }, "https://blbms.github.io");
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                window.parent.postMessage({
+                    type: "error",
+                    message: "Napaka pri pridobivanju podatkov"
+                }, "https://blbms.github.io");
+            });
     </script>
 </head>
 <body>
-    <!-- Prazno - vse se izvaja prek skripte -->
+    <!-- Prazno - vse obdeluje skripta -->
 </body>
 </html>
