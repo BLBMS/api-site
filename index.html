@@ -4,34 +4,45 @@
     <meta charset="UTF-8">
     <title>API Proxy</title>
     <script>
-        const sourcePage = 'oneuser'; // Ali dobite iz URL parametrov
-
-        // Ustvarite pravilen URLSearchParams objekt za Content-Type
-        const headers = new Headers();
-        headers.append('Content-Type', 'application/json');
-        headers.append('X-Source-Page', sourcePage);
-        headers.append('X-Requested-From', window.location.href);
-
-        fetch('https://apicc.42web.io/proxy-content', {
+        const sourcePage = 'oneuser';
+        
+        // Ustvarite nov Request objekt za boljši nadzor
+        const request = new Request('https://apicc.42web.io/proxy-content', {
             method: 'POST',
-            mode: 'cors',
-            headers: headers,
+            headers: new Headers({
+                'Content-Type': 'application/json',
+                'X-Source-Page': sourcePage,
+                'X-Requested-From': window.location.href
+            }),
             body: JSON.stringify({
                 data_url: `https://blbms.github.io/${sourcePage}/data.json`
-            })
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            return response.json();
-        })
-        .then(data => {
-            console.log('Success:', data);
-            // Tukaj obdelajte podatke
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            // Tukaj obravnavajte napako
+            }),
+            mode: 'cors',
+            credentials: 'include'
         });
+
+        // Dodatno preverjanje glav pred pošiljanjem
+        console.log('Sending headers:', {
+            'Content-Type': request.headers.get('Content-Type'),
+            'X-Source-Page': request.headers.get('X-Source-Page')
+        });
+
+        fetch(request)
+            .then(async response => {
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || `HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success:', data);
+                // Tukaj obdelajte podatke
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Tukaj obravnavajte napako
+            });
     </script>
 </head>
 <body>
