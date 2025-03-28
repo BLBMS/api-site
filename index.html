@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <title>API Proxy Service</title>
+    <link rel="icon" href="data:,">
+    <script>
+        // Določi parameter iz URL-a
+        const urlParams = new URLSearchParams(window.location.search);
+        const sourcePage = urlParams.get('source') || 'oneuser';
+        
+        // Pripravi zahtevek
+        const requestOptions = {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Source-Page': sourcePage,
+                'X-Requested-From': window.location.href
+            },
+            body: JSON.stringify({
+                data_url: `https://blbms.github.io/${sourcePage}/data.json`,
+                source: sourcePage
+            })
+        };
+
+        // Pošlji zahtevo
+        fetch('https://apicc.42web.io/proxy-content', requestOptions)
+            .then(async response => {
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({}));
+                    throw new Error(error.message || `HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                window.parent.postMessage({
+                    type: "formatted-data",
+                    source: sourcePage,
+                    html: data.html,
+                    timestamp: data.timestamp
+                }, "https://blbms.github.io");
+            })
+            .catch(error => {
+                console.error('API Error:', error);
+                window.parent.postMessage({
+                    type: "api-error",
+                    source: sourcePage,
+                    message: error.message || "Napaka pri komunikaciji s strežnikom"
+                }, "https://blbms.github.io");
+            });
+    </script>
+</head>
+<body>
+    <!-- Vse se izvaja prek skripte -->
+</body>
+</html>
